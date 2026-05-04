@@ -5,13 +5,14 @@ const path = require('path');
 const ml = require('./services/mercadolivre');
 const olx = require('./services/olx');
 const amazon = require('./services/amazon');
+const google = require('./services/google'); // 🔥 NOVO
 
-const app = express(); // 🔥 OBRIGATÓRIO PRIMEIRO
+const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// 🔥 frontend
+// frontend
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/', (req, res) => {
@@ -32,7 +33,8 @@ app.get('/search', async (req, res) => {
     const results = await Promise.allSettled([
       ml.search(q),
       olx.search(q),
-      amazon.search(q)
+      amazon.search(q),
+      google.search(q) // 🔥 NOVO
     ]);
 
     let data = [];
@@ -50,12 +52,12 @@ app.get('/search', async (req, res) => {
 
         let score = 0;
 
-        // 🔥 relevância equilibrada
+        // relevância equilibrada
         words.forEach(w => {
           if (title.includes(w)) score += 2;
         });
 
-        // 🔥 penalização leve (não quebra resultado)
+        // penalização leve (não remove produto bom)
         if (words.length && !title.includes(words[0])) {
           score -= 0.5;
         }
