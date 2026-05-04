@@ -173,3 +173,23 @@ h1 {
         height: 160px;
     }
 }
+
+table {
+    background: #0f172a;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th {
+    background: #2563eb;
+    padding: 6px;
+}
+
+td {
+    padding: 6px;
+    text-align: center;
+}
+
+tr:nth-child(even) {
+    background: #1e293b;
+}
