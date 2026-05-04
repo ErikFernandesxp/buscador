@@ -5,71 +5,57 @@ const path = require('path');
 const ml = require('./services/mercadolivre');
 const olx = require('./services/olx');
 const amazon = require('./services/amazon');
-const ai = require('./services/ai');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-/* =========================
-   IMAGEM FALLBACK
-========================= */
-function gerarImagem(title) {
-  return `https://source.unsplash.com/400x300/?${encodeURIComponent(title)}`;
-}
-
-/* =========================
-   SEARCH (ROBUSTO)
-========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
   if (!q) return res.json([]);
 
   try {
-    const [mlData, olxData, amazonData] = await Promise.all([
-      ml.search(q).catch(() => []),
-      olx.search(q).catch(() => []),
-      amazon.search(q).catch(() => [])
+    const results = await Promise.allSettled([
+      ml.search(q),
+      olx.search(q),
+      amazon.search(q)
     ]);
 
-    let data = [
-      ...(mlData || []),
-      ...(olxData || []),
-      ...(amazonData || [])
-    ];
+    let data = [];
 
-    console.log("TOTAL RAW:", data.length);
+    results.forEach(r => {
+      if (r.status === "fulfilled" && Array.isArray(r.value)) {
+        data = data.concat(r.value);
+      }
+    });
 
+    // 🔥 fallback seguro
     if (!data.length) {
       return res.json([]);
     }
 
-    const agrupado = ai.agrupar(data);
-
-    const final = agrupado.map(item => ({
-      title: item.title || "",
-      price: Number(item.price) || 0,
-      source: item.source || "",
-
-      image: item.image && item.image !== ""
-        ? item.image
-        : gerarImagem(item.title || "produto"),
-
-      link: item.link || "#"
-    }));
+    // 🔥 normalização simples (SEM AI COMPLEXA)
+    const final = data
+      .filter(p => p && p.title && p.price)
+      .map(p => ({
+        title: p.title,
+        price: Number(p.price) || 0,
+        image: p.image || "",
+        link: p.link || "#",
+        source: p.source || "Loja"
+      }));
 
     return res.json(final);
 
   } catch (err) {
-    console.error("SEARCH ERROR:", err);
+    console.error(err);
     return res.json([]);
   }
 });
