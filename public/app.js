@@ -1,3 +1,31 @@
+const API_URL = "/search";
+
+let resultados = [];
+
+async function buscar() {
+    const q = document.getElementById("busca").value;
+
+    if (!q) return;
+
+    try {
+        const res = await fetch(`${API_URL}?q=${encodeURIComponent(q)}&t=${Date.now()}`);
+        const data = await res.json();
+
+        console.log("RESULTADOS:", data);
+
+        if (!data || !Array.isArray(data)) return;
+
+        if (data.length > 0) {
+            resultados = data;
+        }
+
+        renderizar(resultados);
+
+    } catch (err) {
+        console.error("Erro:", err);
+    }
+}
+
 function renderizar(data) {
     const grid = document.getElementById("grid");
     const melhorDiv = document.getElementById("melhor");
@@ -10,7 +38,6 @@ function renderizar(data) {
         return;
     }
 
-    // 🔥 melhor oferta global
     const ordenado = [...data].sort((a, b) =>
         (Number(a.price) || 999999) - (Number(b.price) || 999999)
     );
@@ -28,48 +55,30 @@ function renderizar(data) {
         </div>
     `;
 
-    // 🔥 AGRUPAR POR PRODUTO (simples)
     data.forEach(p => {
-
         grid.innerHTML += `
             <div class="card">
-
                 <img src="${p.image || ''}">
-
                 <div class="title">${p.title || ''}</div>
-
-                <div class="price">A partir de R$ ${p.price || 0}</div>
-
-                <small>Loja principal: ${p.source || ''}</small>
-
-                <table style="
-                    width:100%;
-                    margin-top:10px;
-                    font-size:12px;
-                    border-collapse: collapse;
-                    color:#fff;
-                ">
-                    <tr style="border-bottom:1px solid #333;">
-                        <th>Loja</th>
-                        <th>Preço</th>
-                        <th>Ação</th>
-                    </tr>
-
-                    <tr>
-                        <td>${p.source || ''}</td>
-                        <td>R$ ${p.price || 0}</td>
-                        <td>
-                            <a href="${p.link || '#'}" target="_blank">Ver</a>
-                        </td>
-                    </tr>
-                </table>
-
-                <br>
-
-                <a class="button" href="${p.link}" target="_blank">
-                    Ver melhor oferta
-                </a>
+                <div class="price">R$ ${p.price || 0}</div>
+                <small>${p.source || ''}</small><br>
+                <a class="button" href="${p.link}" target="_blank">Ver produto</a>
             </div>
         `;
     });
 }
+
+/* FILTRO SEGURO */
+document.addEventListener("input", () => {
+    if (!resultados.length) return;
+
+    const min = Number(document.getElementById("min").value) || 0;
+    const max = Number(document.getElementById("max").value) || 999999;
+
+    const filtrado = resultados.filter(p => {
+        const price = Number(p.price) || 0;
+        return price >= min && price <= max;
+    });
+
+    renderizar(filtrado);
+});
