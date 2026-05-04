@@ -1,24 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-
-const ml = require('./services/mercadolivre');
-const olx = require('./services/olx');
-const amazon = require('./services/amazon');
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
 app.get('/search', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
+
+  const query = q.toLowerCase().trim();
+  const words = query.split(" ").filter(Boolean);
 
   try {
     const results = await Promise.allSettled([
@@ -35,16 +20,39 @@ app.get('/search', async (req, res) => {
       }
     });
 
-    // 🔥 NÃO DESCARTA ITEM IMPORTANTE
     const final = data
-  .filter(p => p && p.title)
-  .map(p => ({
-    title: p.title,
-    price: Number(p.price) || 0,
-    image: p.image || "",
-    link: p.link || "",   // pode vir vazio (ok agora)
-    source: p.source || "Loja"
-  }));
+      .filter(p => p && p.title)
+      .map(p => {
+        const title = (p.title || "").toLowerCase();
+
+        // 🔥 SCORE DE RELEVÂNCIA REAL
+        let score = 0;
+
+        words.forEach(w => {
+          if (title.includes(w)) score += 2; // palavra exata vale mais
+        });
+
+        // 🔥 penaliza se for muito diferente
+        if (!title.includes(words[0] || "")) score -= 1;
+
+        return {
+          title: p.title,
+          price: Number(p.price) || 0,
+          image: p.image || "",
+          link: p.link || "",
+          source: p.source || "Loja",
+          score
+        };
+      })
+      .filter(p => p.score > 0) // 🔥 remove lixo
+      .sort((a, b) => b.score - a.score || a.price - b.price) // relevância + menor preço
+      .map(p => ({
+        title: p.title,
+        price: p.price,
+        image: p.image,
+        link: p.link,
+        source: p.source
+      }));
 
     return res.json(final);
 
@@ -53,6 +61,3 @@ app.get('/search', async (req, res) => {
     return res.json([]);
   }
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
