@@ -13,19 +13,29 @@ exports.search = async (q) => {
     let items = [];
 
     $('.s-result-item').each((i, el) => {
+
       const title = $(el).find('h2 span').text();
+
       const priceText = $(el).find('.a-price-whole').text();
-      const price = parseFloat(priceText.replace(/[^\d]/g, ''));
+
+      const price = Number(
+        priceText.replace(/[^\d]/g, '')
+      );
 
       const image = $(el).find('img').attr('src');
-      const link = $(el).find('h2 a').attr('href');
+
+      const href = $(el).find('h2 a').attr('href');
+
+      const link = href
+        ? `https://www.amazon.com.br${href}`
+        : "";
 
       if (title && price) {
         items.push({
           title,
-          price,
+          price: isNaN(price) ? 0 : price,
           image: image || "",
-          link: link ? `https://www.amazon.com.br${link}` : "",
+          link,
           source: "Amazon"
         });
       }
