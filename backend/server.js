@@ -1,3 +1,26 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+const ml = require('./services/mercadolivre');
+const olx = require('./services/olx');
+const amazon = require('./services/amazon');
+
+const app = express(); // 🔥 OBRIGATÓRIO PRIMEIRO
+
+app.use(cors());
+app.use(express.json());
+
+// 🔥 frontend
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+/* =========================
+   🔎 SEARCH INTELIGENTE
+========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
@@ -27,17 +50,16 @@ app.get('/search', async (req, res) => {
 
         let score = 0;
 
-        // 🔥 melhora relevância sem matar resultados
+        // 🔥 relevância equilibrada
         words.forEach(w => {
-          if (title.includes(w)) score += 3;
+          if (title.includes(w)) score += 2;
         });
 
-        // 🔥 penalização leve (evita RX aparecer em RTX, mas não zera tudo)
-        if (words.length > 0 && !title.includes(words[0])) {
+        // 🔥 penalização leve (não quebra resultado)
+        if (words.length && !title.includes(words[0])) {
           score -= 0.5;
         }
 
-        // 🔥 garante que não zera tudo sem querer
         if (score < 0) score = 0;
 
         return {
@@ -49,11 +71,8 @@ app.get('/search', async (req, res) => {
           score
         };
       })
-      // 🔥 NÃO mata resultado útil
       .filter(p => p.score >= 0)
-      .sort((a, b) =>
-        (b.score - a.score) || (a.price - b.price)
-      )
+      .sort((a, b) => b.score - a.score || a.price - b.price)
       .map(p => ({
         title: p.title,
         price: p.price,
@@ -68,4 +87,13 @@ app.get('/search', async (req, res) => {
     console.error("SEARCH ERROR:", err);
     return res.json([]);
   }
+});
+
+/* =========================
+   🚀 SERVER START
+========================= */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Servidor rodando na porta " + PORT);
 });
