@@ -1,8 +1,8 @@
 body {
     margin: 0;
     font-family: Arial;
-    background: #0f172a;
-    color: white;
+    background: #f5f9ff;
+    color: #1e293b;
 }
 
 .container {
@@ -13,6 +13,7 @@ body {
 
 h1 {
     text-align: center;
+    color: #2563eb;
 }
 
 .search-box {
@@ -24,20 +25,19 @@ h1 {
 .search-box input {
     width: 400px;
     padding: 12px;
-    border-radius: 8px 0 0 8px;
-    border: none;
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #cbd5e1;
 }
 
 .search-box button {
     padding: 12px 20px;
     border: none;
-    background: #2563eb;
+    background: #38bdf8;
     color: white;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 10px 10px 0;
     cursor: pointer;
 }
 
-/* 🔥 filtros */
 .filters {
     display: flex;
     justify-content: center;
@@ -47,22 +47,22 @@ h1 {
 
 .filters input {
     padding: 8px;
-    border-radius: 6px;
-    border: none;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
     width: 120px;
 }
 
 /* destaque */
 .melhor-card {
-    background: #1e293b;
+    background: white;
     padding: 20px;
     border-radius: 12px;
     text-align: center;
-    border: 2px solid #22c55e;
+    border: 2px solid #38bdf8;
     margin-bottom: 20px;
 }
 
-/* GRID MARKETPLACE */
+/* GRID */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -70,22 +70,22 @@ h1 {
 }
 
 .card {
-    background: #1e293b;
+    background: white;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 12px;
     text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     transition: 0.2s;
 }
 
 .card:hover {
-    transform: scale(1.02);
+    transform: translateY(-3px);
 }
 
 .card img {
     width: 100%;
     height: 160px;
     object-fit: contain;
-    background: white;
     border-radius: 8px;
 }
 
@@ -95,7 +95,7 @@ h1 {
 }
 
 .price {
-    color: #22c55e;
+    color: #0ea5e9;
     font-weight: bold;
 }
 
@@ -103,7 +103,7 @@ h1 {
     display: inline-block;
     margin-top: 8px;
     padding: 6px 10px;
-    background: #2563eb;
+    background: #38bdf8;
     color: white;
     border-radius: 6px;
     text-decoration: none;
