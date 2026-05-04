@@ -37,17 +37,14 @@ app.get('/search', async (req, res) => {
 
     // 🔥 NÃO DESCARTA ITEM IMPORTANTE
     const final = data
-      .filter(p => p && p.title)
-      .map(p => ({
-        title: p.title,
-        price: Number(p.price) || 0,
-        image: p.image || "",
-
-        // 🔥 NÃO FORÇA HTTP AQUI (isso tava quebrando OLX/ML)
-        link: p.link || "",
-
-        source: p.source || "Loja"
-      }));
+  .filter(p => p && p.title)
+  .map(p => ({
+    title: p.title,
+    price: Number(p.price) || 0,
+    image: p.image || "",
+    link: p.link || "",   // pode vir vazio (ok agora)
+    source: p.source || "Loja"
+  }));
 
     return res.json(final);
 
