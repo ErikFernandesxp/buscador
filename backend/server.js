@@ -35,20 +35,24 @@ app.get('/search', async (req, res) => {
       }
     });
 
+    // 🔥 NÃO DESCARTA ITEM IMPORTANTE
     const final = data
       .filter(p => p && p.title)
       .map(p => ({
-        title: p.title || "",
+        title: p.title,
         price: Number(p.price) || 0,
         image: p.image || "",
-        link: (p.link && p.link.startsWith("http")) ? p.link : "",
+
+        // 🔥 NÃO FORÇA HTTP AQUI (isso tava quebrando OLX/ML)
+        link: p.link || "",
+
         source: p.source || "Loja"
       }));
 
     return res.json(final);
 
   } catch (err) {
-    console.error(err);
+    console.error("Erro search:", err);
     return res.json([]);
   }
 });
