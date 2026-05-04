@@ -35,14 +35,13 @@ app.get('/search', async (req, res) => {
       }
     });
 
-    // 🔥 padronização final segura
     const final = data
       .filter(p => p && p.title)
       .map(p => ({
         title: p.title || "",
         price: Number(p.price) || 0,
         image: p.image || "",
-        link: p.link || "",
+        link: (p.link && p.link.startsWith("http")) ? p.link : "",
         source: p.source || "Loja"
       }));
 
@@ -55,4 +54,4 @@ app.get('/search', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Servidor rodando"));
+app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
