@@ -27,22 +27,27 @@ app.get('/search', async (req, res) => {
 
         let score = 0;
 
+        // 🔥 pontuação mais suave (evita sumir produto válido)
         words.forEach(w => {
-          if (title.includes(w)) score += 3;
+          if (title.includes(w)) score += 2;
         });
 
-        if (!title.includes(words[0] || "")) score -= 2;
+        // 🔥 NÃO remove forte (isso estava quebrando resultados)
+        if (words.length && !title.includes(words[0])) {
+          score -= 1;
+        }
 
         return {
           title: p.title,
-          price: parseFloat(p.price) || 0,
+          price: Number(p.price) || 0,
           image: p.image || "",
           link: p.link || "",
           source: p.source || "Loja",
           score
         };
       })
-      .filter(p => p.score > 0)
+      // 🔥 não elimina tudo, só remove lixo total
+      .filter(p => p.score >= 0)
       .sort((a, b) => b.score - a.score || a.price - b.price)
       .map(p => ({
         title: p.title,
@@ -55,7 +60,7 @@ app.get('/search', async (req, res) => {
     return res.json(final);
 
   } catch (err) {
-    console.error(err);
+    console.error("SEARCH ERROR:", err);
     return res.json([]);
   }
 });
