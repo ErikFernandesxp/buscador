@@ -22,13 +22,15 @@ function agrupar(produtos) {
   });
 
   return grupos.map(g => {
-    const melhor = g.items.sort((a,b) => a.price - b.price)[0];
+    const melhor = g.items.sort((a, b) => a.price - b.price)[0];
 
     return {
       title: melhor.title,
       price: melhor.price,
+
+      // 🔥 NÃO PERDER DADOS
       image: melhor.image || "",
-      link: melhor.link || melhor.url || "#",
+      link: melhor.link || "",
       source: melhor.source || ""
     };
   });
