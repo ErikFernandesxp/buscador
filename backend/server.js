@@ -18,7 +18,6 @@ app.get('/', (req, res) => {
 
 app.get('/search', async (req, res) => {
   const { q } = req.query;
-
   if (!q) return res.json([]);
 
   try {
@@ -36,19 +35,14 @@ app.get('/search', async (req, res) => {
       }
     });
 
-    // 🔥 fallback seguro
-    if (!data.length) {
-      return res.json([]);
-    }
-
-    // 🔥 normalização simples (SEM AI COMPLEXA)
+    // 🔥 padronização final segura
     const final = data
-      .filter(p => p && p.title && p.price)
+      .filter(p => p && p.title)
       .map(p => ({
-        title: p.title,
+        title: p.title || "",
         price: Number(p.price) || 0,
         image: p.image || "",
-        link: p.link || "#",
+        link: p.link || "",
         source: p.source || "Loja"
       }));
 
@@ -61,4 +55,4 @@ app.get('/search', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
+app.listen(PORT, () => console.log("Servidor rodando"));
