@@ -29,16 +29,40 @@ function agrupar(produtos = []) {
   });
 
   return grupos.map(g => {
-    const melhor = g.items.sort((a, b) =>
-      (Number(a.price) || 999999) - (Number(b.price) || 999999)
+    const porLoja = {};
+
+    g.items.forEach(p => {
+      const loja = p.source || "Outros";
+
+      if (!porLoja[loja]) {
+        porLoja[loja] = p;
+      } else {
+        // mantém menor preço por loja
+        if ((p.price || 999999) < (porLoja[loja].price || 999999)) {
+          porLoja[loja] = p;
+        }
+      }
+    });
+
+    const lojas = Object.values(porLoja);
+
+    const melhor = lojas.sort((a, b) =>
+      (a.price || 999999) - (b.price || 999999)
     )[0];
 
     return {
-      title: melhor.title || "",
-      price: Number(melhor.price) || 0,
+      title: melhor.title,
       image: melhor.image || "",
-      link: melhor.link || "",
-      source: melhor.source || ""
+      bestPrice: melhor.price,
+      bestStore: melhor.source,
+
+      link: melhor.link,
+
+      comparison: lojas.map(l => ({
+        store: l.source,
+        price: l.price,
+        link: l.link
+      }))
     };
   });
 }
