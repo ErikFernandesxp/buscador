@@ -15,18 +15,18 @@ app.use(cors({
 
 app.use(express.json());
 
-// 🔥 ROTA PRINCIPAL (corrige "Cannot GET /")
+// 🟢 STATUS
 app.get('/', (req, res) => {
   res.json({
     status: "online",
-    message: "API do Buscador funcionando",
+    message: "API Buscador funcionando",
     endpoints: {
       search: "/search?q=produto"
     }
   });
 });
 
-// 🔎 ROTA DE BUSCA
+// 🔎 SEARCH PRINCIPAL
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -42,24 +42,30 @@ app.get('/search', async (req, res) => {
     let data = [];
 
     results.forEach(r => {
-      if (r.status === "fulfilled") {
+      if (r.status === "fulfilled" && Array.isArray(r.value)) {
         data = data.concat(r.value);
       }
     });
 
-    data = data.filter(i => i.price && i.title);
+    // 🔧 filtro mais seguro
+    data = data.filter(i =>
+      i &&
+      i.title &&
+      i.price !== undefined &&
+      i.price !== null
+    );
 
     const agrupado = ai.agrupar(data);
 
     return res.json(agrupado);
 
   } catch (err) {
-    console.error("Erro na busca:", err);
+    console.error("Erro search:", err);
     return res.json([]);
   }
 });
 
-// 🚀 PORTA DO RENDER
+// 🚀 PORTA RENDER
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
