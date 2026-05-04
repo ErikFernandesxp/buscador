@@ -1,3 +1,27 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+const ml = require('./services/mercadolivre');
+const olx = require('./services/olx');
+const amazon = require('./services/amazon');
+
+const app = express(); // 🔥 TEM QUE SER A PRIMEIRA COISA DO APP
+
+app.use(cors());
+app.use(express.json());
+
+// 🔥 serve o frontend
+app.use(express.static(path.join(__dirname, '../public')));
+
+// 🔥 rota principal do site
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+/* =========================
+   🔎 SEARCH INTELIGENTE
+========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
@@ -25,15 +49,12 @@ app.get('/search', async (req, res) => {
       .map(p => {
         const title = (p.title || "").toLowerCase();
 
-        // 🔥 SCORE DE RELEVÂNCIA REAL
+        // 🔥 sistema de relevância simples
         let score = 0;
 
         words.forEach(w => {
-          if (title.includes(w)) score += 2; // palavra exata vale mais
+          if (title.includes(w)) score += 2;
         });
-
-        // 🔥 penaliza se for muito diferente
-        if (!title.includes(words[0] || "")) score -= 1;
 
         return {
           title: p.title,
@@ -44,8 +65,8 @@ app.get('/search', async (req, res) => {
           score
         };
       })
-      .filter(p => p.score > 0) // 🔥 remove lixo
-      .sort((a, b) => b.score - a.score || a.price - b.price) // relevância + menor preço
+      .filter(p => p.score > 0) // remove irrelevantes
+      .sort((a, b) => b.score - a.score || a.price - b.price)
       .map(p => ({
         title: p.title,
         price: p.price,
@@ -60,4 +81,13 @@ app.get('/search', async (req, res) => {
     console.error("Erro search:", err);
     return res.json([]);
   }
+});
+
+/* =========================
+   🚀 START SERVER
+========================= */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Servidor rodando na porta " + PORT);
 });
