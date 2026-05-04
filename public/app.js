@@ -4,7 +4,6 @@ let resultados = [];
 
 async function buscar() {
     const q = document.getElementById("busca").value;
-
     if (!q) return;
 
     const res = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
@@ -30,7 +29,7 @@ function renderizar(data) {
     melhorDiv.innerHTML = `
         <div class="melhor-card">
             <h2>🔥 Melhor oferta</h2>
-            <img src="${melhor.image}" width="200">
+            <img src="${melhor.image}">
             <p>${melhor.title}</p>
             <p class="price">R$ ${melhor.price}</p>
             <a class="button" href="${melhor.link}" target="_blank">Comprar</a>
@@ -43,7 +42,7 @@ function renderizar(data) {
                 <img src="${p.image}">
                 <div class="title">${p.title}</div>
                 <div class="price">R$ ${p.price}</div>
-                <small>${p.source || ''}</small><br>
+                <small>${p.source}</small><br>
                 <a class="button" href="${p.link}" target="_blank">Ver produto</a>
             </div>
         `;
