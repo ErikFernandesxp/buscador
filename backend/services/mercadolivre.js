@@ -7,7 +7,10 @@ exports.search = async (q) => {
   return res.data.results.slice(0, 20).map(i => ({
     title: i.title,
     price: i.price,
-    image: i.thumbnail.replace('-I.jpg','-O.jpg'), // 🔥 imagem maior
+
+    // 🔥 imagem real HD
+    image: i.thumbnail ? i.thumbnail.replace('-I.jpg', '-O.jpg') : "",
+
     link: i.permalink,
     source: "Mercado Livre"
   }));
