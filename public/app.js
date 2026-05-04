@@ -10,11 +10,7 @@ async function buscar() {
     const res = await fetch(`${API_URL}?q=${encodeURIComponent(q)}&t=${Date.now()}`);
     const data = await res.json();
 
-    if (Array.isArray(data) && data.length) {
-      resultados = data;
-    } else {
-      resultados = [];
-    }
+    resultados = Array.isArray(data) ? data : [];
 
     renderizar(resultados);
 
@@ -25,6 +21,16 @@ async function buscar() {
   }
 }
 
+function gerarLinkSeguro(item) {
+  // 🔥 prioridade: link real
+  if (item.link && item.link.startsWith("http")) {
+    return item.link;
+  }
+
+  // 🔥 fallback inteligente
+  return `https://www.google.com/search?q=${encodeURIComponent(item.title || "")}`;
+}
+
 function renderizar(data) {
   const grid = document.getElementById("grid");
   const melhorDiv = document.getElementById("melhor");
@@ -32,17 +38,14 @@ function renderizar(data) {
   grid.innerHTML = "";
   melhorDiv.innerHTML = "";
 
-  if (!data || !data.length) {
+  if (!data.length) {
     grid.innerHTML = "<p>Nenhum resultado encontrado</p>";
     return;
   }
 
-  // 🔥 melhor preço
   const melhor = [...data].sort((a, b) => (a.price || 0) - (b.price || 0))[0];
 
-  const linkMelhor = (melhor.link && melhor.link.startsWith("http"))
-    ? melhor.link
-    : null;
+  const linkMelhor = gerarLinkSeguro(melhor);
 
   melhorDiv.innerHTML = `
     <div class="melhor-card">
@@ -52,17 +55,15 @@ function renderizar(data) {
       <p class="price">R$ ${melhor.price}</p>
       <small>${melhor.source || ''}</small><br>
 
-      ${
-        linkMelhor
-          ? `<a class="button" href="${linkMelhor}" target="_blank" rel="noopener noreferrer">Comprar</a>`
-          : `<span>Sem link disponível</span>`
-      }
+      <a class="button" href="${linkMelhor}" target="_blank" rel="noopener noreferrer">
+        Ver oferta
+      </a>
     </div>
   `;
 
   data.forEach(p => {
 
-    const link = (p.link && p.link.startsWith("http")) ? p.link : null;
+    const link = gerarLinkSeguro(p);
 
     grid.innerHTML += `
       <div class="card">
@@ -71,11 +72,9 @@ function renderizar(data) {
         <div class="price">R$ ${p.price}</div>
         <small>${p.source || ''}</small><br>
 
-        ${
-          link
-            ? `<a class="button" href="${link}" target="_blank" rel="noopener noreferrer">Ver produto</a>`
-            : `<span style="color:#999">Sem link</span>`
-        }
+        <a class="button" href="${link}" target="_blank" rel="noopener noreferrer">
+          Ver produto
+        </a>
       </div>
     `;
   });
