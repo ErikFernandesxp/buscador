@@ -16,8 +16,11 @@ exports.search = async (q) => {
     const priceText = $(el).find('.a-price-whole').text();
     const price = parseFloat(priceText.replace(/[^\d]/g, ''));
 
+    const image = $(el).find('img').attr('src');
+    const link = "https://www.amazon.com.br";
+
     if (title && price) {
-      items.push({ title, price, source: "Amazon" });
+      items.push({ title, price, image, link, source: "Amazon" });
     }
   });
 
