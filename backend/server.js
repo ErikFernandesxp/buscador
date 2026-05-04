@@ -9,21 +9,21 @@ const ai = require('./services/ai');
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+app.use(cors());
 app.use(express.json());
 
 /* =========================
-   🔥 FRONTEND (public)
+   🔥 SERVIR FRONTEND (PARENT DIR)
 ========================= */
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
-// garante abertura do index.html
+// abrir site
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 /* =========================
-   🔎 API SEARCH
+   API SEARCH
 ========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
@@ -45,24 +45,18 @@ app.get('/search', async (req, res) => {
       }
     });
 
-    // filtro seguro
-    data = data.filter(i =>
-      i && i.title && i.price !== undefined && i.price !== null
-    );
+    data = data.filter(i => i && i.title && i.price);
 
     const agrupado = ai.agrupar(data);
 
     return res.json(agrupado);
 
   } catch (err) {
-    console.error("Erro search:", err);
+    console.error(err);
     return res.json([]);
   }
 });
 
-/* =========================
-   🚀 PORT (RENDER)
-========================= */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
