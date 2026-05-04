@@ -1,30 +1,3 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-
-const ml = require('./services/mercadolivre');
-const olx = require('./services/olx');
-const amazon = require('./services/amazon');
-const ai = require('./services/ai');
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-/* =========================
-   🔥 SERVIR FRONTEND (PARENT DIR)
-========================= */
-app.use(express.static(path.join(__dirname, '../public')));
-
-// abrir site
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-/* =========================
-   API SEARCH
-========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -49,16 +22,21 @@ app.get('/search', async (req, res) => {
 
     const agrupado = ai.agrupar(data);
 
-    return res.json(agrupado);
+    // 🔥 PADRONIZA TUDO AQUI (ESSENCIAL)
+    const final = agrupado.map(item => ({
+      title: item.title,
+      price: item.price,
+      source: item.source || "",
+
+      image: item.image || "https://via.placeholder.com/300x200?text=Sem+Imagem",
+
+      link: item.link || item.url || "#"
+    }));
+
+    return res.json(final);
 
   } catch (err) {
     console.error(err);
     return res.json([]);
   }
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
 });
