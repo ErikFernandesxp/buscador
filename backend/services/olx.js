@@ -18,10 +18,16 @@ exports.search = async (q) => {
 
     const image = $(el).find('img').attr('src');
 
-    const link = "https://www.olx.com.br";
+    const link = $(el).find('a').attr('href');
 
-    if (title && price) {
-      items.push({ title, price, image, link, source: "OLX" });
+    if (title && price && link) {
+      items.push({
+        title,
+        price,
+        image: image || "",
+        link: link.startsWith('http') ? link : `https://www.olx.com.br${link}`,
+        source: "OLX"
+      });
     }
   });
 
