@@ -8,7 +8,7 @@ exports.search = async (q) => {
     title: i.title,
     price: i.price,
 
-    // 🔥 imagem real HD
+    // 🔥 imagem HD real
     image: i.thumbnail ? i.thumbnail.replace('-I.jpg', '-O.jpg') : "",
 
     link: i.permalink,
