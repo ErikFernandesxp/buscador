@@ -15,26 +15,23 @@ async function buscar() {
 }
 
 function gerarLink(item) {
-  // 🔥 se tem link válido usa ele
   if (item.link && item.link.startsWith("http")) {
     return item.link;
   }
 
-  // 🔥 fallback por loja (IMPORTANTE)
   if (item.source === "Amazon") {
-    return `https://www.amazon.com.br/s?k=${encodeURIComponent(item.title)}`;
+    return `https://www.amazon.com.br/s?k=${encodeURIComponent(item.title || "")}`;
   }
 
   if (item.source === "Mercado Livre") {
-    return `https://lista.mercadolivre.com.br/${encodeURIComponent(item.title)}`;
+    return `https://lista.mercadolivre.com.br/${encodeURIComponent(item.title || "")}`;
   }
 
   if (item.source === "OLX") {
-    return `https://www.olx.com.br/brasil?q=${encodeURIComponent(item.title)}`;
+    return `https://www.olx.com.br/brasil?q=${encodeURIComponent(item.title || "")}`;
   }
 
-  // fallback geral
-  return `https://www.google.com/search?q=${encodeURIComponent(item.title)}`;
+  return `https://www.google.com/search?q=${encodeURIComponent(item.title || "")}`;
 }
 
 function renderizar(data) {
@@ -44,12 +41,12 @@ function renderizar(data) {
   grid.innerHTML = "";
   melhorDiv.innerHTML = "";
 
-  if (!data.length) {
+  if (!data || !data.length) {
     grid.innerHTML = "<p>Nenhum resultado encontrado</p>";
     return;
   }
 
-  const melhor = [...data].sort((a,b) => (a.price||0) - (b.price||0))[0];
+  const melhor = [...data].sort((a, b) => (a.price || 0) - (b.price || 0))[0];
 
   const linkMelhor = gerarLink(melhor);
 
@@ -58,10 +55,10 @@ function renderizar(data) {
       <h2>🔥 Melhor oferta</h2>
       <img src="${melhor.image || ''}">
       <p>${melhor.title}</p>
-      <p class="price">R$ ${melhor.price}</p>
-      <small>${melhor.source}</small><br>
+      <p class="price">R$ ${Number(melhor.price || 0).toFixed(2)}</p>
+      <small>${melhor.source || ''}</small><br>
 
-      <a class="button" href="${linkMelhor}" target="_blank">
+      <a class="button" href="${linkMelhor}" target="_blank" rel="noopener noreferrer">
         Ver oferta
       </a>
     </div>
@@ -69,16 +66,17 @@ function renderizar(data) {
 
   data.forEach(p => {
 
+    const price = Number(p.price || 0);
     const link = gerarLink(p);
 
     grid.innerHTML += `
       <div class="card">
         <img src="${p.image || ''}">
         <div class="title">${p.title}</div>
-        <div class="price">R$ ${p.price}</div>
-        <small>${p.source}</small><br>
+        <div class="price">R$ ${price.toFixed(2)}</div>
+        <small>${p.source || ''}</small><br>
 
-        <a class="button" href="${link}" target="_blank">
+        <a class="button" href="${link}" target="_blank" rel="noopener noreferrer">
           Ver produto
         </a>
       </div>
@@ -86,15 +84,20 @@ function renderizar(data) {
   });
 }
 
+/* 🔥 FILTRO DE PREÇO CORRIGIDO */
 document.addEventListener("input", () => {
   if (!resultados.length) return;
 
   const min = Number(document.getElementById("min").value) || 0;
   const max = Number(document.getElementById("max").value) || 999999;
 
-  const filtrado = resultados.filter(p =>
-    (p.price || 0) >= min && (p.price || 0) <= max
-  );
+  const filtrado = resultados.filter(p => {
+    const price = Number(p.price);
+
+    if (isNaN(price)) return false;
+
+    return price >= min && price <= max;
+  });
 
   renderizar(filtrado);
 });
