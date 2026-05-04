@@ -1,3 +1,30 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+const ml = require('./services/mercadolivre');
+const olx = require('./services/olx');
+const amazon = require('./services/amazon');
+const ai = require('./services/ai');
+
+const app = express(); // 🔥 ESSA LINHA É O QUE ESTÁ FALTANDO
+
+app.use(cors());
+app.use(express.json());
+
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+function gerarImagem(title) {
+  return `https://source.unsplash.com/400x300/?${encodeURIComponent(title)}`;
+}
+
+/* =========================
+   SEARCH
+========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -16,14 +43,11 @@ app.get('/search', async (req, res) => {
       ...(amazonData || [])
     ];
 
-    console.log("DEBUG TOTAL:", data.length);
-
-    // 🔥 SE NADA VIER, NÃO QUEBRA
     if (!data.length) {
       return res.json([]);
     }
 
-    const agrupado = ai.agrupar(data || []);
+    const agrupado = ai.agrupar(data);
 
     const final = agrupado.map(item => ({
       title: item.title || "",
@@ -40,7 +64,10 @@ app.get('/search', async (req, res) => {
     return res.json(final);
 
   } catch (err) {
-    console.error("SEARCH ERROR:", err);
+    console.error(err);
     return res.json([]);
   }
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
