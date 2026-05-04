@@ -7,8 +7,11 @@ const amazon = require('./services/amazon');
 const ai = require('./services/ai');
 
 const app = express();
-app.use(cors());
 
+app.use(cors());
+app.use(express.json());
+
+// Rota principal de busca
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -33,11 +36,17 @@ app.get('/search', async (req, res) => {
 
     const agrupado = ai.agrupar(data);
 
-    res.json(agrupado);
+    return res.json(agrupado);
 
   } catch (err) {
-    res.json([]);
+    console.error(err);
+    return res.json([]);
   }
 });
 
-app.listen(3000, () => console.log('http://localhost:3000'));
+// 🔥 CORREÇÃO PRINCIPAL PARA RENDER
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
