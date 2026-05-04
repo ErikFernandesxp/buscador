@@ -5,7 +5,7 @@ const path = require('path');
 const ml = require('./services/mercadolivre');
 const olx = require('./services/olx');
 const amazon = require('./services/amazon');
-const google = require('./services/google'); // 🔥 NOVO
+const google = require('./services/google');
 
 const app = express();
 
@@ -26,68 +26,67 @@ app.get('/search', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
 
-  const query = q.toLowerCase().trim();
-  const words = query.split(" ").filter(Boolean);
-
   try {
     const results = await Promise.allSettled([
       ml.search(q),
       olx.search(q),
       amazon.search(q),
-      google.search(q) // 🔥 NOVO
+      google.search(q)
     ]);
 
     let data = [];
 
-    results.forEach(r => {
+    for (const r of results) {
       if (r.status === "fulfilled" && Array.isArray(r.value)) {
         data = data.concat(r.value);
       }
-    });
+    }
 
+    // 🔥 NORMALIZAÇÃO FORTE (EVITA SUMIR DADOS)
     const final = data
       .filter(p => p && p.title)
-      .map(p => {
-        const title = (p.title || "").toLowerCase();
-
-        let score = 0;
-
-        // relevância equilibrada
-        words.forEach(w => {
-          if (title.includes(w)) score += 2;
-        });
-
-        // penalização leve (não remove produto bom)
-        if (words.length && !title.includes(words[0])) {
-          score -= 0.5;
-        }
-
-        if (score < 0) score = 0;
-
-        return {
-          title: p.title,
-          price: Number(p.price) || 0,
-          image: p.image || "",
-          link: p.link || "",
-          source: p.source || "Loja",
-          score
-        };
-      })
-      .filter(p => p.score >= 0)
-      .sort((a, b) => b.score - a.score || a.price - b.price)
       .map(p => ({
-        title: p.title,
-        price: p.price,
-        image: p.image,
-        link: p.link,
-        source: p.source
-      }));
+        title: p.title || "Sem título",
+        price: Number(p.price),
+        image: p.image && p.image.trim() !== ""
+          ? p.image
+          : "https://via.placeholder.com/300?text=Sem+Imagem",
+
+        link: (p.link && p.link.startsWith("http"))
+          ? p.link
+          : "",
+
+        source: p.source || "Loja"
+      }))
+      .filter(p => p.title.length > 3);
+
+    // 🔥 fallback se tudo falhar
+    if (final.length === 0) {
+      return res.json([
+        {
+          title: q,
+          price: 0,
+          image: "https://via.placeholder.com/300?text=Sem+Resultados",
+          link: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+          source: "Google Fallback"
+        }
+      ]);
+    }
 
     return res.json(final);
 
   } catch (err) {
     console.error("SEARCH ERROR:", err);
-    return res.json([]);
+
+    return res.json([
+      {
+        title: q,
+        price: 0,
+        image: "https://via.placeholder.com/300?text=Erro+na+Busca",
+        link: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+        source: "Fallback"
+      }
+    ]);
   }
 });
 
