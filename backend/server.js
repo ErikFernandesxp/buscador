@@ -1,27 +1,3 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-
-const ml = require('./services/mercadolivre');
-const olx = require('./services/olx');
-const amazon = require('./services/amazon');
-
-const app = express(); // 🔥 TEM QUE SER A PRIMEIRA COISA DO APP
-
-app.use(cors());
-app.use(express.json());
-
-// 🔥 serve o frontend
-app.use(express.static(path.join(__dirname, '../public')));
-
-// 🔥 rota principal do site
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-/* =========================
-   🔎 SEARCH INTELIGENTE
-========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
@@ -49,23 +25,24 @@ app.get('/search', async (req, res) => {
       .map(p => {
         const title = (p.title || "").toLowerCase();
 
-        // 🔥 sistema de relevância simples
         let score = 0;
 
         words.forEach(w => {
-          if (title.includes(w)) score += 2;
+          if (title.includes(w)) score += 3;
         });
+
+        if (!title.includes(words[0] || "")) score -= 2;
 
         return {
           title: p.title,
-          price: Number(p.price) || 0,
+          price: parseFloat(p.price) || 0,
           image: p.image || "",
           link: p.link || "",
           source: p.source || "Loja",
           score
         };
       })
-      .filter(p => p.score > 0) // remove irrelevantes
+      .filter(p => p.score > 0)
       .sort((a, b) => b.score - a.score || a.price - b.price)
       .map(p => ({
         title: p.title,
@@ -78,16 +55,7 @@ app.get('/search', async (req, res) => {
     return res.json(final);
 
   } catch (err) {
-    console.error("Erro search:", err);
+    console.error(err);
     return res.json([]);
   }
-});
-
-/* =========================
-   🚀 START SERVER
-========================= */
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log("Servidor rodando na porta " + PORT);
 });
