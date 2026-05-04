@@ -25,11 +25,11 @@ function agrupar(produtos) {
     const melhor = g.items.sort((a,b) => a.price - b.price)[0];
 
     return {
-      title: melhor.title,   // 🔥 CORRIGIDO
-      price: melhor.price,   // 🔥 CORRIGIDO
-      link: melhor.link,
+      title: melhor.title,
+      price: melhor.price,
       image: melhor.image || "",
-      source: melhor.source
+      link: melhor.link || melhor.url || "#",
+      source: melhor.source || ""
     };
   });
 }
