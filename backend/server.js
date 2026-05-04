@@ -8,13 +8,23 @@ const ai = require('./services/ai');
 
 const app = express();
 
-// 🔥 CORS mais seguro (produção)
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST'],
 }));
 
 app.use(express.json());
+
+// 🔥 ROTA PRINCIPAL (corrige "Cannot GET /")
+app.get('/', (req, res) => {
+  res.json({
+    status: "online",
+    message: "API do Buscador funcionando",
+    endpoints: {
+      search: "/search?q=produto"
+    }
+  });
+});
 
 // 🔎 ROTA DE BUSCA
 app.get('/search', async (req, res) => {
@@ -49,7 +59,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-// 🚀 PORTA DINÂMICA (OBRIGATÓRIO NO RENDER)
+// 🚀 PORTA DO RENDER
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
