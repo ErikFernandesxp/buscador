@@ -5,7 +5,6 @@ const path = require('path');
 const ml = require('./services/mercadolivre');
 const olx = require('./services/olx');
 const amazon = require('./services/amazon');
-const google = require('./services/google');
 
 const app = express();
 
@@ -20,7 +19,7 @@ app.get('/', (req, res) => {
 });
 
 /* =========================
-   🔎 SEARCH INTELIGENTE
+   🔎 SEARCH ESTÁVEL
 ========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
@@ -30,8 +29,7 @@ app.get('/search', async (req, res) => {
     const results = await Promise.allSettled([
       ml.search(q),
       olx.search(q),
-      amazon.search(q),
-      google.search(q)
+      amazon.search(q)
     ]);
 
     let data = [];
@@ -42,12 +40,11 @@ app.get('/search', async (req, res) => {
       }
     }
 
-    // 🔥 NORMALIZAÇÃO FORTE (EVITA SUMIR DADOS)
     const final = data
       .filter(p => p && p.title)
       .map(p => ({
         title: p.title || "Sem título",
-        price: Number(p.price),
+        price: Number(p.price) || 0,
         image: p.image && p.image.trim() !== ""
           ? p.image
           : "https://via.placeholder.com/300?text=Sem+Imagem",
@@ -60,33 +57,11 @@ app.get('/search', async (req, res) => {
       }))
       .filter(p => p.title.length > 3);
 
-    // 🔥 fallback se tudo falhar
-    if (final.length === 0) {
-      return res.json([
-        {
-          title: q,
-          price: 0,
-          image: "https://via.placeholder.com/300?text=Sem+Resultados",
-          link: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
-          source: "Google Fallback"
-        }
-      ]);
-    }
-
     return res.json(final);
 
   } catch (err) {
     console.error("SEARCH ERROR:", err);
-
-    return res.json([
-      {
-        title: q,
-        price: 0,
-        image: "https://via.placeholder.com/300?text=Erro+na+Busca",
-        link: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
-        source: "Fallback"
-      }
-    ]);
+    return res.json([]);
   }
 });
 
