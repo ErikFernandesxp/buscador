@@ -13,17 +13,23 @@ exports.search = async (q) => {
     let items = [];
 
     $('li').each((i, el) => {
+
       const title = $(el).find('h2').text();
+
       const priceText = $(el).find('span').first().text();
-      const price = parseFloat(priceText.replace(/[^\d]/g, ''));
+
+      const price = Number(
+        priceText.replace(/[^\d]/g, '')
+      );
 
       const image = $(el).find('img').attr('src');
+
       const link = $(el).find('a').attr('href');
 
       if (title && price) {
         items.push({
           title,
-          price,
+          price: isNaN(price) ? 0 : price,
           image: image || "",
           link: link ? `https://www.olx.com.br${link}` : "",
           source: "OLX"
