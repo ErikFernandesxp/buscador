@@ -7,7 +7,7 @@ const olx = require('./services/olx');
 const amazon = require('./services/amazon');
 const ai = require('./services/ai');
 
-const app = express(); // 🔥 ESSA LINHA É O QUE ESTÁ FALTANDO
+const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -18,12 +18,15 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+/* =========================
+   IMAGEM FALLBACK
+========================= */
 function gerarImagem(title) {
   return `https://source.unsplash.com/400x300/?${encodeURIComponent(title)}`;
 }
 
 /* =========================
-   SEARCH
+   SEARCH (ROBUSTO)
 ========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
@@ -42,6 +45,8 @@ app.get('/search', async (req, res) => {
       ...(olxData || []),
       ...(amazonData || [])
     ];
+
+    console.log("TOTAL RAW:", data.length);
 
     if (!data.length) {
       return res.json([]);
@@ -64,7 +69,7 @@ app.get('/search', async (req, res) => {
     return res.json(final);
 
   } catch (err) {
-    console.error(err);
+    console.error("SEARCH ERROR:", err);
     return res.json([]);
   }
 });
