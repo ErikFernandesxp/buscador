@@ -15,12 +15,9 @@ exports.search = async (q) => {
     $('.s-result-item').each((i, el) => {
 
       const title = $(el).find('h2 span').text();
+      const priceText = $(el).find('.a-price-whole').first().text();
 
-      const priceText = $(el).find('.a-price-whole').text();
-
-      const price = Number(
-        priceText.replace(/[^\d]/g, '')
-      );
+      const price = Number(priceText.replace(/[^\d]/g, ''));
 
       const image = $(el).find('img').attr('src');
 
