@@ -7,10 +7,17 @@ async function buscar() {
 
     if (!q) return;
 
-    const res = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
-    resultados = await res.json();
+    try {
+        const res = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
+        resultados = await res.json();
 
-    renderizar(resultados);
+        console.log("RESULTADOS:", resultados);
+
+        renderizar(resultados);
+
+    } catch (err) {
+        console.error("Erro busca:", err);
+    }
 }
 
 function renderizar(data) {
@@ -20,65 +27,73 @@ function renderizar(data) {
     grid.innerHTML = "";
     melhorDiv.innerHTML = "";
 
-    if (!data.length) {
+    if (!data || !data.length) {
         grid.innerHTML = "<p>Nenhum resultado encontrado</p>";
         return;
     }
 
-    const melhor = data[0];
+    // 🔥 melhor oferta (menor preço real)
+    const ordenado = [...data].sort((a, b) =>
+        (Number(a.price) || 999999) - (Number(b.price) || 999999)
+    );
 
-    // 🔥 destaque principal
+    const melhor = ordenado[0];
+
     melhorDiv.innerHTML = `
         <div class="melhor-card">
             <h2>🔥 Melhor oferta</h2>
             <img src="${melhor.image || ''}">
-            <p>${melhor.title}</p>
-            <p class="price">R$ ${melhor.bestPrice}</p>
-            <small>Melhor loja: ${melhor.bestStore}</small><br>
-            <a class="button" href="${melhor.link}" target="_blank">Comprar</a>
+            <p>${melhor.title || ''}</p>
+
+            <p class="price">R$ ${melhor.price || 0}</p>
+
+            <small>Loja: ${melhor.source || ''}</small>
+
+            <br>
+
+            <a class="button"
+               href="${melhor.link && melhor.link !== '#' ? melhor.link : '#'}"
+               target="_blank">
+               Comprar
+            </a>
         </div>
     `;
 
-    // 🔥 comparação lado a lado
+    // 🔥 GRID
     data.forEach(p => {
-        let lojasHTML = "";
-
-        (p.comparison || []).forEach(l => {
-            lojasHTML += `
-                <div style="margin-top:5px; font-size:12px;">
-                    <strong>${l.store}:</strong>
-                    R$ ${l.price || "N/A"}
-                    <a href="${l.link}" target="_blank">ver</a>
-                </div>
-            `;
-        });
-
         grid.innerHTML += `
             <div class="card">
                 <img src="${p.image || ''}">
-                <div class="title">${p.title}</div>
-                <div class="price">A partir de R$ ${p.bestPrice}</div>
-                <small>${p.bestStore}</small>
+                
+                <div class="title">${p.title || ''}</div>
 
-                ${lojasHTML}
+                <div class="price">R$ ${p.price || 0}</div>
+
+                <small>Loja: ${p.source || ''}</small>
 
                 <br>
-                <a class="button" href="${p.link}" target="_blank">Ver melhor oferta</a>
+
+                <a class="button"
+                   href="${p.link && p.link !== '#' ? p.link : '#'}"
+                   target="_blank">
+                   Ver produto
+                </a>
             </div>
         `;
     });
 }
 
-/* filtro */
+/* FILTRO DE PREÇO */
 document.addEventListener("input", () => {
     if (!resultados.length) return;
 
     const min = Number(document.getElementById("min").value) || 0;
     const max = Number(document.getElementById("max").value) || 999999;
 
-    const filtrado = resultados.filter(p =>
-        (p.bestPrice || 0) >= min && (p.bestPrice || 0) <= max
-    );
+    const filtrado = resultados.filter(p => {
+        const price = Number(p.price) || 0;
+        return price >= min && price <= max;
+    });
 
     renderizar(filtrado);
 });
