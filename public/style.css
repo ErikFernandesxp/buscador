@@ -1,0 +1,85 @@
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    width: 400px;
+    padding: 10px;
+    border-radius: 8px 0 0 8px;
+    border: none;
+}
+
+.search-box button {
+    padding: 10px 20px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+}
+
+.melhor-card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid #22c55e;
+    margin-bottom: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.card img {
+    max-height: 120px;
+    object-fit: contain;
+}
+
+.title {
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.price {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.button {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 10px;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
