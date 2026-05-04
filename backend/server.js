@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const ml = require('./services/mercadolivre');
 const olx = require('./services/olx');
@@ -8,21 +9,22 @@ const ai = require('./services/ai');
 
 const app = express();
 
-app.use(cors({
-  origin: '*'
-}));
-
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// 🌐 SERVIR FRONTEND (IMPORTANTE PARA VISUAL)
-app.use(express.static('public'));
+/* =========================
+   🔥 FRONTEND (public)
+========================= */
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 🟢 HOME
+// garante abertura do index.html
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 🔎 SEARCH
+/* =========================
+   🔎 API SEARCH
+========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -43,19 +45,24 @@ app.get('/search', async (req, res) => {
       }
     });
 
-    data = data.filter(i => i && i.title && i.price);
+    // filtro seguro
+    data = data.filter(i =>
+      i && i.title && i.price !== undefined && i.price !== null
+    );
 
     const agrupado = ai.agrupar(data);
 
     return res.json(agrupado);
 
   } catch (err) {
-    console.error(err);
+    console.error("Erro search:", err);
     return res.json([]);
   }
 });
 
-// 🚀 PORTA RENDER
+/* =========================
+   🚀 PORT (RENDER)
+========================= */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
