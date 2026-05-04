@@ -8,10 +8,15 @@ const ai = require('./services/ai');
 
 const app = express();
 
-app.use(cors());
+// 🔥 CORS mais seguro (produção)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+}));
+
 app.use(express.json());
 
-// Rota principal de busca
+// 🔎 ROTA DE BUSCA
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -39,12 +44,12 @@ app.get('/search', async (req, res) => {
     return res.json(agrupado);
 
   } catch (err) {
-    console.error(err);
+    console.error("Erro na busca:", err);
     return res.json([]);
   }
 });
 
-// 🔥 CORREÇÃO PRINCIPAL PARA RENDER
+// 🚀 PORTA DINÂMICA (OBRIGATÓRIO NO RENDER)
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
