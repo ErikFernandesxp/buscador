@@ -16,8 +16,12 @@ exports.search = async (q) => {
     const priceText = $(el).find('span').first().text();
     const price = parseFloat(priceText.replace(/[^\d]/g, ''));
 
+    const image = $(el).find('img').attr('src');
+
+    const link = "https://www.olx.com.br";
+
     if (title && price) {
-      items.push({ title, price, source: "OLX" });
+      items.push({ title, price, image, link, source: "OLX" });
     }
   });
 
