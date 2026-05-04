@@ -12,21 +12,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// frontend
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-/* 🔥 IA fallback de imagem */
 function gerarImagem(title) {
   return `https://source.unsplash.com/400x300/?${encodeURIComponent(title)}`;
 }
 
-/* =========================
-   SEARCH
-========================= */
 app.get('/search', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.json([]);
@@ -55,12 +50,11 @@ app.get('/search', async (req, res) => {
       price: item.price,
       source: item.source || "",
 
-      // 🔥 IMAGEM REAL OU FALLBACK INTELIGENTE
       image: item.image && item.image !== ""
         ? item.image
         : gerarImagem(item.title),
 
-      link: item.link || item.url || "#"
+      link: item.link || "#"
     }));
 
     return res.json(final);
