@@ -27,15 +27,18 @@ app.get('/search', async (req, res) => {
 
         let score = 0;
 
-        // 🔥 pontuação mais suave (evita sumir produto válido)
+        // 🔥 melhora relevância sem matar resultados
         words.forEach(w => {
-          if (title.includes(w)) score += 2;
+          if (title.includes(w)) score += 3;
         });
 
-        // 🔥 NÃO remove forte (isso estava quebrando resultados)
-        if (words.length && !title.includes(words[0])) {
-          score -= 1;
+        // 🔥 penalização leve (evita RX aparecer em RTX, mas não zera tudo)
+        if (words.length > 0 && !title.includes(words[0])) {
+          score -= 0.5;
         }
+
+        // 🔥 garante que não zera tudo sem querer
+        if (score < 0) score = 0;
 
         return {
           title: p.title,
@@ -46,9 +49,11 @@ app.get('/search', async (req, res) => {
           score
         };
       })
-      // 🔥 não elimina tudo, só remove lixo total
+      // 🔥 NÃO mata resultado útil
       .filter(p => p.score >= 0)
-      .sort((a, b) => b.score - a.score || a.price - b.price)
+      .sort((a, b) =>
+        (b.score - a.score) || (a.price - b.price)
+      )
       .map(p => ({
         title: p.title,
         price: p.price,
