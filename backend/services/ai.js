@@ -28,7 +28,7 @@ function agrupar(produtos) {
       title: melhor.title,
       price: melhor.price,
 
-      // 🔥 NÃO PERDER DADOS
+      // 🔥 NÃO PERDE NADA
       image: melhor.image || "",
       link: melhor.link || "",
       source: melhor.source || ""
