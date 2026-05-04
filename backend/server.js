@@ -9,24 +9,20 @@ const ai = require('./services/ai');
 const app = express();
 
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
+  origin: '*'
 }));
 
 app.use(express.json());
 
-// 🟢 STATUS
+// 🌐 SERVIR FRONTEND (IMPORTANTE PARA VISUAL)
+app.use(express.static('public'));
+
+// 🟢 HOME
 app.get('/', (req, res) => {
-  res.json({
-    status: "online",
-    message: "API Buscador funcionando",
-    endpoints: {
-      search: "/search?q=produto"
-    }
-  });
+  res.sendFile(__dirname + '/public/index.html');
 });
 
-// 🔎 SEARCH PRINCIPAL
+// 🔎 SEARCH
 app.get('/search', async (req, res) => {
   const { q } = req.query;
 
@@ -47,20 +43,14 @@ app.get('/search', async (req, res) => {
       }
     });
 
-    // 🔧 filtro mais seguro
-    data = data.filter(i =>
-      i &&
-      i.title &&
-      i.price !== undefined &&
-      i.price !== null
-    );
+    data = data.filter(i => i && i.title && i.price);
 
     const agrupado = ai.agrupar(data);
 
     return res.json(agrupado);
 
   } catch (err) {
-    console.error("Erro search:", err);
+    console.error(err);
     return res.json([]);
   }
 });
